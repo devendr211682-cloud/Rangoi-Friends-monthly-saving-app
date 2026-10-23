@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="te"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rangoi Friends Savings App</title>
+<style>
+body{font-family:Arial,sans-serif;margin:0;background:#f2f5fa;color:#172033}header{background:#173f75;color:white;text-align:center;padding:20px 10px}main{max-width:1000px;margin:14px auto;padding:0 10px}.cards{display:flex;gap:10px;flex-wrap:wrap}.card,.panel{background:white;border-radius:10px;padding:14px;margin-bottom:12px;box-shadow:0 2px 7px #0001}.card{flex:1;min-width:140px}button,select,input{padding:10px;border-radius:7px;border:1px solid #cbd5e1;margin:4px}button{background:#173f75;color:white;border:0}table{border-collapse:collapse;width:100%;min-width:650px}th,td{padding:9px;border:1px solid #dce3ed;text-align:center}th{background:#e8eef7}.scroll{overflow:auto}.name{text-align:left}small,.note{color:#586579;line-height:1.5}.paid{width:20px;height:20px;accent-color:green}
+</style></head><body>
+<header><h1>Rangoi Friends Savings App</h1><b>Batch-1999-2000 (Rangoi)</b><p>నెలవారీ పొదుపు • ఒక్కొక్కరికి ₹100</p></header>
+<main><div class="cards"><div class="card">సభ్యులు<br><strong id="count">30</strong></div><div class="card">ఎంచుకున్న నెల వసూలు<br><strong id="monthTotal">₹0</strong></div><div class="card">మొత్తం వసూలు<br><strong id="allTotal">₹0</strong></div></div>
+<section class="panel"><h2>నెలవారీ చెల్లింపులు</h2><label>నెల ఎంచుకోండి </label><select id="month"></select><input id="search" placeholder="పేరు వెతకండి"><br>
+<button id="addBtn">+ కొత్త సభ్యుడు</button><button id="markAll">ఈ నెల అందరినీ Paid చేయి</button><button id="clear">ఈ నెల గుర్తులు తొలగించు</button><button id="export">బ్యాకప్ డౌన్‌లోడ్</button><button id="importBtn">బ్యాకప్ లోడ్</button><input id="file" type="file" accept=".json" hidden>
+<form id="newForm" hidden><input id="newName" placeholder="సభ్యుడి పేరు" required><button>చేర్చు</button></form>
+<p class="note">చెల్లించిన సభ్యుడి పెట్టెకు ✓ పెట్టండి. మార్పులు ఈ ఫోన్/బ్రౌజర్‌లో సేవ్ అవుతాయి.</p>
+<div class="scroll"><table><thead><tr><th>నంబర్</th><th>సభ్యుడి పేరు</th><th>Paid ₹100</th><th>స్థితి</th><th>చెల్లించిన నెలలు</th><th>మొత్తం</th></tr></thead><tbody id="rows"></tbody></table></div></section>
+<section class="panel"><h3>గమనిక</h3><p class="note">ఈ ఫైల్‌లో డేటా ఈ పరికరంలో మాత్రమే సేవ్ అవుతుంది. అందరి మొబైళ్లలో ఒకే డేటా కనిపించాలంటే ఆన్‌లైన్ డేటాబేస్ కనెక్షన్ అవసరం. బ్యాకప్‌ను తరచూ డౌన్‌లోడ్ చేసుకోండి.</p><p class="note">కాలవ్యవధి: అక్టోబర్ 2026–జనవరి 2028 (16 నెలలు). 30 మంది అందరూ చెల్లిస్తే నెలకు ₹3,000; మొత్తం ₹48,000.</p></section></main>
+<script>
+const names=["D. దేవేంద్రుడు","T. బాబురావు","R. గంగరావు","T. గిరిబాబు","G. జోగారావు","G. సింహాచలం","G. యాదవయ్య","K. గంగారావు","S. కూర్మారావు","P. గణపతి","P. కృష్ణమోహన్","M. సురేష్","B. పాపారావు","రుక్మిణి","K. మోహన్","T. మన్మథ","R. తులసీదాస్","T. నాగ","K. రాజు","G. తులసయ్య","K. చంద్రశేఖర్","D. తాతయ్య","K. మధు","B. తాతారావు","T. రామారావు","G. ధనుంజయ","శ్రీదేవి","S. మాధవరావు","S. కోటేష్","N. కుమార్"];
+let data;try{data=JSON.parse(localStorage.getItem("rangoiSavingsData")||"null")}catch(e){}
+if(!data||!Array.isArray(data.members))data={members:names.map((name,i)=>({id:i+1,name})),payments:{}};
+data.payments=data.payments||{};
+const months=[];for(let y=2026,m=10;y<2028||(y===2028&&m<=1);){months.push(y+"-"+String(m).padStart(2,"0"));m++;if(m===13){m=1;y++}}
+const label=k=>{let [y,m]=k.split("-").map(Number);return new Date(y,m-1,1).toLocaleDateString("te-IN",{month:"long",year:"numeric"})};
+const sel=document.getElementById("month");months.forEach(k=>{let o=document.createElement("option");o.value=k;o.textContent=label(k);sel.appendChild(o)});sel.value="2026-10";
+const save=()=>localStorage.setItem("rangoiSavingsData",JSON.stringify(data));
+function render(){let k=sel.value,q=document.getElementById("search").value.trim().toLowerCase(),p=data.payments[k]||{},tbody=document.getElementById("rows");tbody.innerHTML="";
+data.members.forEach((m,i)=>{if(q&&!m.name.toLowerCase().includes(q))return;let tr=document.createElement("tr");let vals=[i+1,m.name];vals.forEach((v,j)=>{let td=document.createElement("td");td.textContent=v;if(j===1)td.className="name";tr.appendChild(td)});
+let td=document.createElement("td"),cb=document.createElement("input");cb.type="checkbox";cb.className="paid";cb.checked=!!p[m.id];cb.onchange=()=>{data.payments[k]=data.payments[k]||{};data.payments[k][m.id]=cb.checked;save();render()};td.appendChild(cb);tr.appendChild(td);
+let status=document.createElement("td");status.textContent=cb.checked?"చెల్లించారు ✓":"చెల్లించలేదు";tr.appendChild(status);
+let n=months.filter(mm=>data.payments[mm]&&data.payments[mm][m.id]).length;[n,"₹"+(n*100).toLocaleString("en-IN")].forEach(v=>{let td=document.createElement("td");td.textContent=v;tr.appendChild(td)});tbody.appendChild(tr)});
+document.getElementById("count").textContent=data.members.length;document.getElementById("monthTotal").textContent="₹"+(Object.values(p).filter(Boolean).length*100).toLocaleString("en-IN");let all=0;months.forEach(mm=>all+=Object.values(data.payments[mm]||{}).filter(Boolean).length*100);document.getElementById("allTotal").textContent="₹"+all.toLocaleString("en-IN")}
+sel.onchange=render;document.getElementById("search").oninput=render;
+document.getElementById("addBtn").onclick=()=>document.getElementById("newForm").hidden=false;
+document.getElementById("newForm").onsubmit=e=>{e.preventDefault();let n=document.getElementById("newName").value.trim();if(n)data.members.push({id:Date.now(),name:n});save();e.target.reset();e.target.hidden=true;render()};
+document.getElementById("markAll").onclick=()=>{if(confirm("ఈ నెల అందరి చెల్లింపులుగా గుర్తించాలా?")){data.payments[sel.value]={};data.members.forEach(m=>data.payments[sel.value][m.id]=true);save();render()}};
+document.getElementById("clear").onclick=()=>{if(confirm("ఈ నెల గుర్తులన్నీ తొలగించాలా?")){data.payments[sel.value]={};save();render()}};
+document.getElementById("export").onclick=()=>{let a=document.createElement("a"),u=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));a.href=u;a.download="Rangoi-Savings-Backup.json";a.click();URL.revokeObjectURL(u)};
+document.getElementById("importBtn").onclick=()=>document.getElementById("file").click();
+document.getElementById("file").onchange=e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let d=JSON.parse(r.result);if(!Array.isArray(d.members)||!d.payments)throw 0;if(confirm("ప్రస్తుత డేటాను బ్యాకప్‌తో మార్చాలా?")){data=d;save();render();alert("బ్యాకప్ లోడ్ అయింది")}}catch(err){alert("సరైన బ్యాకప్ ఫైల్ ఎంచుకోండి")}};r.readAsText(f);e.target.value=""};
+render();
+</script></body></html>
